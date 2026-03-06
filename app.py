@@ -1,20 +1,11 @@
 import streamlit as st
 import pandas as pd
 import os
-import zipfile
 
 st.set_page_config(page_title="NTPC CSR Admit Card", page_icon="📄")
 
 st.title("NTPC CSR Entrance Examination 2026")
 st.subheader("Download Your Admit Card")
-
-# -------- unzip folder if needed --------
-zip_path = "New Folder.zip"
-extract_path = "id_cards"
-
-if os.path.exists(zip_path) and not os.path.exists(extract_path):
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_path)
 
 # Load Excel
 df = pd.read_excel("admission data spreadsheet.xlsx")
@@ -39,23 +30,24 @@ if st.button("Get Admit Card"):
 
             if not student.empty:
 
-                name = student.iloc[0]["Candidate Name"]
-                name = name.strip().replace(" ", "_")
+                st.success("Student Verified ✅")
 
-                filename = f"id_cards/{roll}_{name}_AdmitCard.pdf"
+                folder = "New folder"
+                file_found = None
 
-                if os.path.exists(filename):
+                for file in os.listdir(folder):
+                    if file.startswith(str(roll)):
+                        file_found = os.path.join(folder, file)
+                        break
 
-                    with open(filename, "rb") as file:
-                        st.success("Admit Card Found ✅")
-
+                if file_found:
+                    with open(file_found, "rb") as f:
                         st.download_button(
                             label="Download Admit Card",
-                            data=file,
-                            file_name=os.path.basename(filename),
+                            data=f,
+                            file_name=file,
                             mime="application/pdf"
                         )
-
                 else:
                     st.error("Admit Card file not found")
 
